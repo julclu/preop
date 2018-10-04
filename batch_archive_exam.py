@@ -98,34 +98,34 @@ def archive_exam_fn(bnum, tnum):
 ########### ########### ########### ########### ########### ########### ########### ########### ###########
 def dcm_qr_fn(bnum, tnum):
     ## in archive:  
-    dxit_command = 'dcm_exam_info -'+tnum 
-    dxit_output = sub.check_output(dxit_command, shell=True)
-    dxit_lines = dxit_output.decode('utf-8').splitlines()[11:]
+    dxit_lines = dxit_output.decode('utf-8').splitlines()
+    indices = [i for i, s in enumerate(dxit_lines) if '-----' in s]
+    indices= indices[0]
+    indices+=1
+    dxit_lines = dxit_lines[indices:]
     dxit_series_lines = [l.split()[0] for l in dxit_lines]
     series_nums_in_archive = [l for l in dxit_series_lines if len(l) < 3]
     ## snums in recgli folder: 
     os.chdir(recgli_path_root)
     ## does the bnum already exist in here? if not, stay and pull archive: 
     bnums_in_archived = glob.glob('b*')
-    if bnum in bnums_in_archived: 
-        print('pulling exam from archive')
-        os.chdir(os.path.abspath(bnum))
-        os.chdir(os.path.abspath(tnum))
-        ## find the snums in the folder:
-        change_path(preop_path_root)
-        ## Use glob to capture the Enum 
-        Enum = glob.glob('E*')
-        Enum = Enum[0]
-        
-        snums_previously_pulled = os.listdir(Enum)
-        snums_to_pull = [series for series in series_nums_in_archive if series not in snums_previously_pulled]
-        for snum in snums_to_pull:
-            print('pulling exam series number:'+snum)
-            dcm_qr_command = "dcm_qr -"+tnum+" -s "+snum+" -p cjUCSF\!1"
-            sub.call(dcm_qr_command, shell=True)
-    else: 
-        dcm_qr_command = 'dcm_qr -'+tnum+' -p cjUCSF\!1'
+
+    print('pulling exam from archive')
+    os.chdir(os.path.abspath(bnum))
+    os.chdir(os.path.abspath(tnum))
+    ## find the snums in the folder:
+    change_path(preop_path_root)
+    ## Use glob to capture the Enum 
+    Enum = glob.glob('E*')
+    Enum = Enum[0]
+
+    snums_previously_pulled = os.listdir(Enum)
+    snums_to_pull = [series for series in series_nums_in_archive if series not in snums_previously_pulled]
+    for snum in snums_to_pull:
+        print('pulling exam series number:'+snum)
+        dcm_qr_command = "dcm_qr -"+tnum+" -s "+snum+" -p cjUCSF\!1"
         sub.call(dcm_qr_command, shell=True)
+
 
 def getting_bnum_tnum_list(bnum_tnum_csv): 
     ########### Get bnum_tnum list: 
